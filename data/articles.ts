@@ -39,5 +39,20 @@ export const articles: Article[] = [
       "2. Leech socks for wet forest trails like Knuckles after rain.",
       "3. A trash bag. If you love the trail, don’t leave plastic behind. Simple."
     ]
+  },
+  {
+    id: "art_003",
+    title: "මාතලාගල පතන",
+    slug: "beginner-hiking-gear-sri-lanka",
+    author: "Eranda Fernando",
+    coverImage: "/images/mathalagala.jpg",
+    summary:
+      "ශ්‍රී ලංකාවේ මධ්‍යම කඳුකරයේ පිහිටි, යුනෙස්කෝ ලෝක උරුමයක් වන නකල්ස් (Knuckles) හෙවත් දුම්බර කඳු වැටිය, අපූර්ව ජෛව විවිධත්වයකින් සහ නෙත්කළු භූ දර්ශනවලින් අනූන ප්‍රදේශයකි. මෙම කඳු වැටියේ සැඟවී ඇති, එතරම් ප්‍රසිද්ධියට පත් නොවූ එහෙත් අතිශය චමත්කාරජනක ස්ථානයක් ලෙස මාතලාගල පතන හැඳින්විය හැකිය.",
+    publishedDate: "2025-10-20",
+    content: [
+      "පිහිටීම සහ ළඟා වීම",
+      "මාතලාගල පතන, මාතලේ දිස්ත්‍රික්කයේ, රත්තොට ප්‍රාදේශීය ලේකම් කොට්ඨාසයට අයත් වේ.",
+      "නකල්ස් කඳු වැටියේ ජනප්‍රිය සංචාරක ආකර්ෂණයක් වන රිවර්ස්ටන් (Riverston) සහ පිටවල පතන ප්‍රදේශයට ඉතා ආසන්නව මෙය පිහිටා ඇත."
+    ]
   }
 ];

@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function Navbar() {
   return (
     <nav className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 px-6 py-4 bg-green-900 text-white">
-      <div className="text-2xl font-bold tracking-wide">
+      <div className="text-2xl font-bold tracking-wide font-mono">
         Ceylon Wild Trails
       </div>
 
