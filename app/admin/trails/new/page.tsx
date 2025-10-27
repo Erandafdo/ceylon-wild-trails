@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useSite } from "@/context/SiteContext";
 import AdminLayout from "@/components/AdminLayout";
 import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
+import { Trail } from "@/data/trails";
 
 export default function NewTrailPage() {
   const router = useRouter();
+  const { addTrail } = useSite();
+
+  // form state: every field typed properly
   const [form, setForm] = useState({
     name: "",
     province: "",
@@ -17,13 +23,31 @@ export default function NewTrailPage() {
     fullDescription: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Trail added successfully (demo only)");
+
+    // convert to Trail type properly
+    const newTrail: Trail = {
+      id: uuidv4(),
+      name: form.name.trim(),
+      slug: form.name.trim().toLowerCase().replace(/\s+/g, "-"),
+      province: form.province,
+      difficulty: form.difficulty as "Easy" | "Moderate" | "Hard",
+      distanceKm: Number(form.distanceKm),
+      durationHours: form.durationHours,
+      coverImage: form.coverImage,
+      shortDescription: form.shortDescription,
+      fullDescription: form.fullDescription,
+    };
+
+    addTrail(newTrail);
+    alert("Trail added successfully!");
     router.push("/admin/trails");
   };
 
@@ -35,7 +59,7 @@ export default function NewTrailPage() {
             <label className="block text-sm font-medium capitalize mb-1">
               {key}
             </label>
-            {key === "shortDescription" || key === "fullDescription" ? (
+            {key.includes("Description") ? (
               <textarea
                 name={key}
                 value={(form as any)[key]}
@@ -45,7 +69,7 @@ export default function NewTrailPage() {
               />
             ) : (
               <input
-                type="text"
+                type={key === "distanceKm" ? "number" : "text"}
                 name={key}
                 value={(form as any)[key]}
                 onChange={handleChange}

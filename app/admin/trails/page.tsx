@@ -1,18 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { trails as initialTrails, Trail } from "@/data/trails";
+import { useSite } from "@/context/SiteContext";
 import Link from "next/link";
 import AdminLayout from "@/components/AdminLayout";
 
 export default function AdminTrailsPage() {
-  const [trails, setTrails] = useState<Trail[]>(initialTrails);
-
-  const handleDelete = (id: string) => {
-    if (confirm("Delete this trail?")) {
-      setTrails(trails.filter((t) => t.id !== id));
-    }
-  };
+  const { trails, deleteTrail } = useSite();
 
   return (
     <AdminLayout title="Manage Trails">
@@ -48,7 +41,7 @@ export default function AdminTrailsPage() {
                   Edit
                 </Link>
                 <button
-                  onClick={() => handleDelete(t.id)}
+                  onClick={() => deleteTrail(t.id)}
                   className="text-red-600 hover:underline"
                 >
                   Delete

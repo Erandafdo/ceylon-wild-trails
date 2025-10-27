@@ -2,6 +2,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
+import { SiteProvider } from "@/context/SiteContext";
 
 export const metadata: Metadata = {
   title: "Ceylon Wild Trails",
@@ -16,9 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <SiteProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </SiteProvider>
       </body>
     </html>
   );

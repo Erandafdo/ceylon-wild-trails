@@ -1,46 +1,105 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { trails } from "@/data/trails";
 import AdminLayout from "@/components/AdminLayout";
-import { useState } from "react";
+import { useSite } from "@/context/SiteContext";
+import { useState, useEffect } from "react";
+import { Trail } from "@/data/trails";
 
 export default function EditTrailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const existing = trails.find((t) => t.id === params.id);
-  const [form, setForm] = useState(existing || {});
+  const { trails, updateTrail } = useSite();
 
-  if (!existing) {
-    return <div className="p-8 text-red-600">Trail not found.</div>;
+  // find trail by id
+  const existing = trails.find((t) => t.id === params.id);
+
+  // local editable form state
+  const [form, setForm] = useState<Trail | null>(null);
+
+  // when page loads, set the form with existing trail data
+  useEffect(() => {
+    if (!existing) {
+      // invalid id → go back to admin list
+      router.push("/admin/trails");
+    } else {
+      setForm(existing);
+    }
+  }, [existing, router]);
+
+  // while loading / redirecting / setting form
+  if (!existing || !form) {
+    return (
+      <div className="p-8 text-gray-600">
+        Loading trail data...
+      </div>
+    );
   }
 
-  const handleChange = (e: any) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // handle field change in form
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
 
-  const handleSubmit = (e: any) => {
+    // distanceKm is numeric, keep that numeric if editing that field
+    if (name === "distanceKm") {
+      setForm({ ...form, [name]: Number(value) });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+  };
+
+  // submit form
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Trail updated successfully (demo only)");
+
+    // update context store
+    updateTrail(params.id, form);
+
+    alert("Trail updated successfully!");
     router.push("/admin/trails");
   };
 
+  // keys we want to show/edit (and in what order)
+  const editableFields: Array<keyof Trail> = [
+    "name",
+    "slug",
+    "province",
+    "difficulty",
+    "distanceKm",
+    "durationHours",
+    "coverImage",
+    "shortDescription",
+    "fullDescription",
+  ];
+
   return (
-    <AdminLayout title={`Edit: ${existing.name}`}>
+    <AdminLayout title={`Edit Trail: ${existing.name}`}>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
-        {Object.keys(existing).map((key) => (
-          key !== "id" && (
-            <div key={key}>
-              <label className="block text-sm font-medium capitalize mb-1">
-                {key}
-              </label>
-              <input
-                type="text"
+        {editableFields.map((key) => (
+          <div key={key}>
+            <label className="block text-sm font-medium capitalize mb-1">
+              {key}
+            </label>
+
+            {key === "shortDescription" || key === "fullDescription" ? (
+              <textarea
                 name={key}
-                value={(form as any)[key] || ""}
+                value={(form as any)[key] ?? ""}
+                onChange={handleChange}
+                className="border rounded w-full p-2"
+                rows={key === "fullDescription" ? 4 : 2}
+              />
+            ) : (
+              <input
+                type={key === "distanceKm" ? "number" : "text"}
+                name={key}
+                value={(form as any)[key] ?? ""}
                 onChange={handleChange}
                 className="border rounded w-full p-2"
               />
-            </div>
-          )
+            )}
+          </div>
         ))}
 
         <button
