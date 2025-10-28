@@ -1,41 +1,106 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useSite } from "@/context/SiteContext";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+// ✅ Lazy-load map to avoid "window is not defined"
+const TrailMap = dynamic(() => import("@/components/TrailMap"), { ssr: false });
 
 export default function TrailDetailPage() {
-  const { trails, loading } = useSite();
+  const { trails } = useSite();
   const params = useParams();
   const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
 
-  if (loading) return <div className="p-8 text-gray-600">Loading trail...</div>;
+  const [trail, setTrail] = useState<any>(null);
 
-  const trail = trails.find((t) => t.slug === slug);
+  // ✅ Load trail data (either from context or API)
+  useEffect(() => {
+    if (!slug) return;
 
+    // Check local context first
+    const localTrail = trails.find((t) => t.slug === slug);
+    if (localTrail) {
+      setTrail(localTrail);
+      return;
+    }
+
+    // Otherwise fetch from backend
+    fetch(`http://localhost:4000/api/trails/slug/${slug}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setTrail(data))
+      .catch((err) => console.error("Error loading trail:", err));
+  }, [slug, trails]);
+
+  // ✅ If still loading or not found
   if (!trail)
     return (
-      <div className="p-8 text-red-600 text-center">Trail not found.</div>
+      <div className="text-center text-red-600 mt-16 text-lg">
+        Trail not found.
+      </div>
     );
 
+  // ✅ Render UI
   return (
-    <main className="max-w-4xl mx-auto py-12 px-4 md:px-0">
-      <div className="relative w-full h-[50vh] mb-8 rounded-lg overflow-hidden shadow-lg">
-        <Image
-          src={trail.coverImage}
-          alt={trail.name}
-          fill
-          className="object-cover"
-        />
-      </div>
+    <main className="px-6 md:px-10 py-12">
+      {/* Header Image */}
+      {trail.coverImage && (
+        <div className="relative w-full h-[60vh] mb-10">
+          <Image
+            src={trail.coverImage}
+            alt={trail.name}
+            fill
+            className="object-cover rounded-lg shadow-md"
+          />
+          <div className="absolute bottom-5 left-5 bg-black/60 text-white p-4 rounded">
+            <h1 className="text-3xl font-bold">{trail.name}</h1>
+            <p className="text-sm">
+              {trail.location || "Unknown location"} • {trail.province}
+            </p>
+          </div>
+        </div>
+      )}
 
-      <h1 className="text-4xl font-bold mb-3">{trail.name}</h1>
-      <p className="text-gray-600 mb-2">
-        {trail.province} — Difficulty: {trail.difficulty}
-      </p>
-      <p className="text-gray-700 italic mb-8">{trail.shortDescription}</p>
+      {/* ✅ Info Section */}
+      <section className="bg-white p-6 rounded-lg shadow-sm mb-10">
+        <h2 className="text-2xl font-semibold mb-4">Trail Information</h2>
+        <div className="grid md:grid-cols-2 gap-4 text-sm">
+          <p>
+            <strong>Difficulty:</strong> {trail.difficulty || "N/A"}
+          </p>
+          <p>
+            <strong>Trail Length:</strong> {trail.length_km || "N/A"} km
+          </p>
+          <p>
+            <strong>Time Required:</strong> {trail.time || "N/A"}
+          </p>
+          <p>
+            <strong>Province:</strong> {trail.province}
+          </p>
+        </div>
+      </section>
 
-      <p className="text-gray-800 leading-relaxed">{trail.fullDescription}</p>
+      {/* ✅ Description Section */}
+      <section className="bg-gray-50 p-6 rounded-lg shadow-sm mb-10">
+        <h2 className="text-2xl font-semibold mb-4">Trail Description</h2>
+        <p className="text-gray-700 leading-relaxed">
+          {trail.description || trail.shortDescription || "No description available."}
+        </p>
+      </section>
+
+      {/* ✅ Map Section */}
+      {trail.coords && Array.isArray(trail.coords) && (
+        <section className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4">Trail Location</h2>
+          <TrailMap
+            coords={trail.coords as [number, number]}
+            name={trail.name}
+            location={trail.location || trail.province}
+          />
+        </section>
+      )}
     </main>
   );
 }

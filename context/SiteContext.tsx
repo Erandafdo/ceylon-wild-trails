@@ -11,7 +11,7 @@ interface SiteContextType {
   fetchTrails: () => Promise<void>;
   fetchArticles: () => Promise<void>;
   addTrail: (trail: Omit<Trail, "id">) => Promise<void>;
-  updateTrail: (id: string, data: Partial<Trail>) => Promise<void>;
+  updateTrail: (id: string, data: any) => Promise<void>;
   deleteTrail: (id: string) => Promise<void>;
   addArticle: (article: Omit<Article, "id">) => Promise<void>;
   updateArticle: (id: string, data: Partial<Article>) => Promise<void>;
@@ -53,7 +53,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     if (res.ok) await fetchTrails();
   };
 
-  const updateTrail = async (id: string, data: Partial<Trail>) => {
+  const updateTrail = async (id: string, data: any) => {
     const res = await fetch(`${API_URL}/trails/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -61,6 +61,7 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     });
     if (res.ok) await fetchTrails();
   };
+
 
   const deleteTrail = async (id: string) => {
     const res = await fetch(`${API_URL}/trails/${id}`, { method: "DELETE" });
