@@ -1,38 +1,41 @@
-import { trails } from "@/data/trails";
+"use client";
 
-interface TrailDetailPageProps {
-  params: { slug: string };
-}
+import { useParams } from "next/navigation";
+import { useSite } from "@/context/SiteContext";
+import Image from "next/image";
 
-export default function TrailDetailPage({ params }: TrailDetailPageProps) {
-  const trail = trails.find((t) => t.slug === params.slug);
+export default function TrailDetailPage() {
+  const { trails, loading } = useSite();
+  const params = useParams();
+  const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
 
-  if (!trail) {
+  if (loading) return <div className="p-8 text-gray-600">Loading trail...</div>;
+
+  const trail = trails.find((t) => t.slug === slug);
+
+  if (!trail)
     return (
-      <div className="p-10 text-center text-red-600">
-        <h2 className="text-2xl font-bold mb-3">Trail Not Found</h2>
-        <p>Sorry, that trail does not exist.</p>
-      </div>
+      <div className="p-8 text-red-600 text-center">Trail not found.</div>
     );
-  }
 
   return (
-    <div className="px-6 md:px-10 py-12 max-w-4xl mx-auto">
-      <img
-        src={trail.coverImage}
-        alt={trail.name}
-        className="w-full h-[50vh] object-cover rounded-lg shadow"
-      />
-
-      <h1 className="text-3xl font-bold mt-8">{trail.name}</h1>
-      <div className="text-gray-600 text-sm mt-2">
-        {trail.province} Province • {trail.difficulty} • {trail.distanceKm} km •{" "}
-        {trail.durationHours}
+    <main className="max-w-4xl mx-auto py-12 px-4 md:px-0">
+      <div className="relative w-full h-[50vh] mb-8 rounded-lg overflow-hidden shadow-lg">
+        <Image
+          src={trail.coverImage}
+          alt={trail.name}
+          fill
+          className="object-cover"
+        />
       </div>
 
-      <p className="text-gray-800 leading-relaxed mt-6 whitespace-pre-line">
-        {trail.fullDescription}
+      <h1 className="text-4xl font-bold mb-3">{trail.name}</h1>
+      <p className="text-gray-600 mb-2">
+        {trail.province} — Difficulty: {trail.difficulty}
       </p>
-    </div>
+      <p className="text-gray-700 italic mb-8">{trail.shortDescription}</p>
+
+      <p className="text-gray-800 leading-relaxed">{trail.fullDescription}</p>
+    </main>
   );
 }

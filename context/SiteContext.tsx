@@ -1,55 +1,103 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
-import { trails as initialTrails, Trail } from "@/data/trails";
-import { articles as initialArticles, Article } from "@/data/articles";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import type { Trail } from "@/data/trails";
+import type { Article } from "@/data/articles";
 
-// Define the context type
 interface SiteContextType {
   trails: Trail[];
   articles: Article[];
-  addTrail: (trail: Trail) => void;
-  updateTrail: (id: string, updated: Partial<Trail>) => void;
-  deleteTrail: (id: string) => void;
-  addArticle: (article: Article) => void;
-  updateArticle: (id: string, updated: Partial<Article>) => void;
-  deleteArticle: (id: string) => void;
+  loading: boolean;
+  fetchTrails: () => Promise<void>;
+  fetchArticles: () => Promise<void>;
+  addTrail: (trail: Omit<Trail, "id">) => Promise<void>;
+  updateTrail: (id: string, data: Partial<Trail>) => Promise<void>;
+  deleteTrail: (id: string) => Promise<void>;
+  addArticle: (article: Omit<Article, "id">) => Promise<void>;
+  updateArticle: (id: string, data: Partial<Article>) => Promise<void>;
+  deleteArticle: (id: string) => Promise<void>;
 }
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
 
 export function SiteProvider({ children }: { children: React.ReactNode }) {
-  const [trails, setTrails] = useState<Trail[]>(initialTrails);
-  const [articles, setArticles] = useState<Article[]>(initialArticles);
+  const [trails, setTrails] = useState<Trail[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // CRUD logic for Trails
-  const addTrail = (trail: Trail) => setTrails((prev) => [...prev, trail]);
+  const API_URL = "http://localhost:4000/api";
 
-  const updateTrail = (id: string, updated: Partial<Trail>) =>
-    setTrails((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, ...updated } : t))
-    );
+  // fetch data on mount
+  useEffect(() => {
+    Promise.all([fetchTrails(), fetchArticles()]).then(() => setLoading(false));
+  }, []);
 
-  const deleteTrail = (id: string) =>
-    setTrails((prev) => prev.filter((t) => t.id !== id));
+  const fetchTrails = async () => {
+    const res = await fetch(`${API_URL}/trails`);
+    const data = await res.json();
+    setTrails(data);
+  };
 
-  // CRUD logic for Articles
-  const addArticle = (article: Article) =>
-    setArticles((prev) => [...prev, article]);
+  const fetchArticles = async () => {
+    const res = await fetch(`${API_URL}/articles`);
+    const data = await res.json();
+    setArticles(data);
+  };
 
-  const updateArticle = (id: string, updated: Partial<Article>) =>
-    setArticles((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...updated } : a))
-    );
+  const addTrail = async (trail: Omit<Trail, "id">) => {
+    const res = await fetch(`${API_URL}/trails`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(trail),
+    });
+    if (res.ok) await fetchTrails();
+  };
 
-  const deleteArticle = (id: string) =>
-    setArticles((prev) => prev.filter((a) => a.id !== id));
+  const updateTrail = async (id: string, data: Partial<Trail>) => {
+    const res = await fetch(`${API_URL}/trails/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) await fetchTrails();
+  };
+
+  const deleteTrail = async (id: string) => {
+    const res = await fetch(`${API_URL}/trails/${id}`, { method: "DELETE" });
+    if (res.ok) await fetchTrails();
+  };
+
+  const addArticle = async (article: Omit<Article, "id">) => {
+    const res = await fetch(`${API_URL}/articles`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(article),
+    });
+    if (res.ok) await fetchArticles();
+  };
+
+  const updateArticle = async (id: string, data: Partial<Article>) => {
+    const res = await fetch(`${API_URL}/articles/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) await fetchArticles();
+  };
+
+  const deleteArticle = async (id: string) => {
+    const res = await fetch(`${API_URL}/articles/${id}`, { method: "DELETE" });
+    if (res.ok) await fetchArticles();
+  };
 
   return (
     <SiteContext.Provider
       value={{
         trails,
         articles,
+        loading,
+        fetchTrails,
+        fetchArticles,
         addTrail,
         updateTrail,
         deleteTrail,
