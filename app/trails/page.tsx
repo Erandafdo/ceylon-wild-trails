@@ -1,37 +1,79 @@
 "use client";
 
-import { useState } from "react";
-import { trails } from "@/data/trails";
-import TrailCard from "@/components/TrailCard";
+import { useEffect } from "react";
+import { useSite } from "@/context/SiteContext";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function TrailsPage() {
-  const [search, setSearch] = useState("");
+  const { trails, fetchTrails } = useSite();
 
-  const filtered = trails.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // load fresh data from backend when page mounts
+  useEffect(() => {
+    fetchTrails();
+  }, [fetchTrails]);
+
+  // simple fallback UI if nothing loaded yet
+  if (!trails || trails.length === 0) {
+    return (
+      <main className="max-w-6xl mx-auto py-12 px-4 md:px-0">
+        <h1 className="text-3xl font-bold mb-8 text-green-900">
+          Hiking Trails
+        </h1>
+        <p className="text-gray-600">
+          No trails found. Add some in the Admin Dashboard.
+        </p>
+      </main>
+    );
+  }
 
   return (
-    <div className="px-6 md:px-10 py-12">
-      <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">
-        All Trails
+    <main className="max-w-6xl mx-auto py-12 px-4 md:px-0">
+      <h1 className="text-3xl font-bold mb-8 text-green-900">
+        Hiking Trails
       </h1>
 
-      <div className="flex justify-center mb-10">
-        <input
-          type="text"
-          placeholder="Search trails..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded px-4 py-2 w-full md:w-1/3"
-        />
-      </div>
+      <div className="grid md:grid-cols-3 gap-8">
+        {trails.map((trail: any) => (
+          <div
+            key={trail._id ?? trail.id ?? trail.slug}
+            className="bg-white shadow rounded-lg overflow-hidden"
+          >
+            {/* Image block */}
+            <div className="relative h-48 bg-gray-100 flex items-center justify-center">
+              {trail.coverImage ? (
+                <Image
+                    src={trail.coverImage}
+                    alt={trail.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                />
+              ) : (
+                <span className="text-gray-400 text-sm">No Image</span>
+              )}
+            </div>
 
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {filtered.map((trail) => (
-          <TrailCard key={trail.id} trail={trail} />
+            {/* Content block */}
+            <div className="p-4">
+              <h2 className="text-lg font-semibold mb-2">{trail.name}</h2>
+              <p className="text-sm text-gray-600 mb-3">
+                {trail.shortDescription || "No description yet."}
+              </p>
+              <p className="text-xs text-gray-500 mb-3">
+                {trail.province || "Unknown province"}
+              </p>
+
+              <Link
+                href={`/trails/${trail.slug}`}
+                className="text-green-700 hover:underline text-sm font-medium"
+              >
+                View Trail →
+              </Link>
+            </div>
+          </div>
         ))}
       </div>
-    </div>
+    </main>
   );
 }

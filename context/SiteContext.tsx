@@ -32,11 +32,12 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     Promise.all([fetchTrails(), fetchArticles()]).then(() => setLoading(false));
   }, []);
 
-  const fetchTrails = async () => {
-    const res = await fetch(`${API_URL}/trails`);
-    const data = await res.json();
-    setTrails(data);
-  };
+    const fetchTrails = async () => {
+      const res = await fetch(`${API_URL}/trails`);
+      const data = await res.json();
+      setTrails(data); // ✅ this updates context state
+    };
+
 
   const fetchArticles = async () => {
     const res = await fetch(`${API_URL}/articles`);
@@ -53,14 +54,14 @@ export function SiteProvider({ children }: { children: React.ReactNode }) {
     if (res.ok) await fetchTrails();
   };
 
-  const updateTrail = async (id: string, data: any) => {
-    const res = await fetch(`${API_URL}/trails/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (res.ok) await fetchTrails();
-  };
+    const updateTrail = async (id: string, data: Partial<Trail>) => {
+      const res = await fetch(`${API_URL}/trails/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) await fetchTrails();
+    };
 
 
   const deleteTrail = async (id: string) => {
